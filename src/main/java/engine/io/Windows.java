@@ -5,6 +5,8 @@ import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.glfw.GLFWWindowSizeCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
+import static org.lwjgl.opengl.GL11.*;
+
 
 public class Windows {
 
@@ -12,8 +14,7 @@ public class Windows {
     private final String title;
     private long windows;
     public Input input;
-    private float backgroundR, backgroundG, backgroundB;;
-
+    private float backgroundR, backgroundG, backgroundB;
 
     public Windows(int width, int height, String title){
 
@@ -43,6 +44,9 @@ public class Windows {
         GLFW.glfwSetWindowPos(windows, (videoMode.width() - width) / 2, (videoMode.height() - height) / 2);
         GLFW.glfwMakeContextCurrent(windows);
         GL.createCapabilities();
+
+        glEnable(GL_TEXTURE_2D);
+
         GL11.glMatrixMode(GL11.GL_PROJECTION);
         GL11.glLoadIdentity();
         float aspect = (float) width / (float) height;

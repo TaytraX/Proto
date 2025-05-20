@@ -1,6 +1,32 @@
 plugins {
     id("java")
+    id("application")
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
+
+tasks.shadowJar {
+    mergeServiceFiles()
+    manifest {
+        attributes["Main-Class"] = "Main.Main"
+    }
+}
+application {
+    mainClass.set("Main.Main")
+}
+
+tasks.jar {
+    manifest {
+        attributes["Main-Class"] = "Main.Main"
+        attributes["Class-Path"] = configurations.runtimeClasspath.get().joinToString(" ") { it.name }
+    }
+
+    // Pour inclure toutes les dépendances dans le JAR (fat JAR)
+    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+
+    // Évite les erreurs de signature
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 
 group = "org.example"
 version = "1.0-SNAPSHOT"
@@ -12,7 +38,7 @@ val lwjglNatives = Pair(
     System.getProperty("os.arch")!!
 ).let { (name, arch) ->
     when {
-        "FreeBSD".equals(name)                                    ->
+        "FreeBSD".equals(name) ->
             "natives-freebsd"
         arrayOf("Linux", "SunOS", "Unit").any { name.startsWith(it) } ->
             if (arrayOf("arm", "aarch64").any { arch.startsWith(it) })
@@ -47,19 +73,10 @@ dependencies {
 
     implementation("org.lwjgl", "lwjgl")
     implementation("org.lwjgl", "lwjgl-glfw")
-    implementation("org.lwjgl", "lwjgl-jemalloc")
-    implementation("org.lwjgl", "lwjgl-opencl")
     implementation("org.lwjgl", "lwjgl-opengl")
-    implementation("org.lwjgl", "lwjgl-stb")
-    implementation("org.lwjgl", "lwjgl-tootle")
-    implementation("org.lwjgl", "lwjgl-vulkan")
     runtimeOnly("org.lwjgl", "lwjgl", classifier = lwjglNatives)
     runtimeOnly("org.lwjgl", "lwjgl-glfw", classifier = lwjglNatives)
-    runtimeOnly("org.lwjgl", "lwjgl-jemalloc", classifier = lwjglNatives)
-    runtimeOnly("org.lwjgl", "lwjgl-ktx", classifier = lwjglNatives)
-    runtimeOnly("org.lwjgl", "lwjgl-nanovg", classifier = lwjglNatives)
     runtimeOnly("org.lwjgl", "lwjgl-opengl", classifier = lwjglNatives)
-    runtimeOnly("org.lwjgl", "lwjgl-tootle", classifier = lwjglNatives)
     if (lwjglNatives == "natives-macos" || lwjglNatives == "natives-macos-arm64") runtimeOnly("org.lwjgl", "lwjgl-vulkan", classifier = lwjglNatives)
     implementation("org.joml", "joml", jomlVersion)
 }
